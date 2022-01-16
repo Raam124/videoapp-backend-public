@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
 import os
+from django.core.exceptions import ImproperlyConfigured
+
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -44,6 +46,9 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'apps.users',
+    'apps.clips',
+    'apps.files',
+    'apps.common',
 
 ]
 
@@ -141,3 +146,36 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = '/static/'
+
+
+# file upload credentials aws
+
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+STATICFILES_STORAGE = 'storages.backends.s3boto3.S3StaticStorage'
+
+AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID', 'AKIAYB2RWZICJZPRNDMS')
+AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY', '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')
+AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME', 'tinkerclass-files')
+AWS_S3_OBJECT_PARAMETERS = os.getenv('AWS_S3_OBJECT_PARAMETERS', {})
+AWS_S3_FILE_OVERWRITE = os.getenv('AWS_S3_FILE_OVERWRITE', False)
+AWS_LOCATION = os.getenv('AWS_LOCATION', '')
+AWS_S3_USE_SSL = os.getenv('AWS_S3_USE_SSL', True)
+AWS_S3_ENDPOINT_URL = os.getenv('AWS_S3_ENDPOINT_URL', None)
+AWS_S3_VERIFY = os.getenv('AWS_S3_VERIFY', None)
+AWS_S3_REGION_NAME = os.getenv('AWS_S3_REGION_NAME', 'us-east-2')
+AWS_S3_SIGNATURE_VERSION = os.getenv('AWS_S3_SIGNATURE_VERSION', 's3v4')
+# AWS_QUERYSTRING_EXPIRE = os.getenv('AWS_QUERYSTRING_EXPIRE','21600')
+AWS_QUERYSTRING_AUTH = False
+AWS_DEFAULT_ACL = "public-read"
+
+if not all([AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_STORAGE_BUCKET_NAME]):
+        raise ImproperlyConfigured(
+            f'''
+            One or more config items are not present.
+            Please check the configuration again.
+            Required Configs:
+                - AWS_ACCESS_KEY_ID {'[✓]' if AWS_ACCESS_KEY_ID != '' else '[X]'}
+                - AWS_SECRET_ACCESS_KEY {'[✓]' if AWS_SECRET_ACCESS_KEY != '' else '[X]'}
+                - AWS_STORAGE_BUCKET_NAME {'[✓]' if AWS_STORAGE_BUCKET_NAME != '' else '[X]'}
+            '''
+        )
