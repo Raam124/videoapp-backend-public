@@ -5,13 +5,13 @@ from urllib import parse
 from django.shortcuts import render, get_object_or_404, get_list_or_404
 from django.contrib.auth.tokens import default_token_generator
 from django.db import transaction
+
 from rest_framework.exceptions import APIException,NotFound,ValidationError
 
-from .models import User,EmailVerification,AccountStatus
+from .models import Profile, User,EmailVerification,AccountStatus
 from.serializers import UserResetPasswordSerializer,UserChangePasswordSerializer
 
 from apps.common.services import send_mail,generate_hash_token
-
 
 @transaction.atomic
 def register_user(data):
@@ -20,11 +20,17 @@ def register_user(data):
         email=data["email"],
         first_name=data["first_name"],
         last_name=data["last_name"],
+        pseudonym = data['pseudonym'] # TODO case check
     )
     user.set_password(data["password"])
     user.save()
-    send_mail(user.email,"Welcome to Our Site","site is in developing mode please wait")
-    send_verification_email(user)
+    # send_mail(user.email,"Welcome to Our Site","site is in developing mode please wait")
+    # send_verification_email(user)
+
+    profile = Profile(
+        user=user
+    )
+    profile.save()
     return user
 
 def send_verification_email(user):
@@ -53,7 +59,7 @@ def confirm_email_verification(user,token):
 
 def request_password_reset(user):
     token = default_token_generator.make_token(user)
-    reset_url = '%s/reset-password?email=%s&token=%s' % ("http://localhost:8080/", user.email, token)
+    reset_url = '%s/reset-password?email=%s&token=%s' % ("http://localhost:8080", user.email, token)
     send_mail(user.email, "Password Reset",reset_url)
     print(reset_url)
 
@@ -75,3 +81,11 @@ def change_password(user, password_data):
             user.save()
     else:
         raise APIException("Old password is invalid")
+
+
+def delete_user(user_id):
+    user: User = User.objects.get(pk=user_id)
+    user.is_active = False
+    user.save()
+
+    return user
