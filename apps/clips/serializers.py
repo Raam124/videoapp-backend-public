@@ -33,10 +33,10 @@ class ClipSerializer(serializers.ModelSerializer):
     likes = serializers.SerializerMethodField(read_only=True)
     likes_count = serializers.SerializerMethodField(read_only=True)
     tags = TagSerializer(many=True,read_only=True)
-    file = serializers.SerializerMethodField(read_only=True)
+    # file = serializers.SerializerMethodField(read_only=True)
 
-    def get_file(self,obj):
-        return FileSerializer(obj.file,read_only=True).data
+    # def get_file(self,obj):
+        # return FileSerializer(obj.file,read_only=True).data
 
     def get_likes(self, obj):
         flat_list = [item for sublist in obj.likes.values_list(

@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 
 import os
 from django.core.exceptions import ImproperlyConfigured
-
+from datetime import timedelta, datetime
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -103,6 +103,11 @@ DATABASES = {
         'HOST': os.environ.get('DATABASE_HOST', 'localhost'),
         'PORT': os.environ.get("DATABASE_PORT", '5432'),
     }
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=30)
 }
 
 
