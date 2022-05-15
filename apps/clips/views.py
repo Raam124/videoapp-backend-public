@@ -52,16 +52,16 @@ class ClipViewSet(viewsets.ModelViewSet):
             url_path="(?P<user_id>[^/.]+)/user-clips", url_name='get_user_clips')
     def get_user_clips(self,request,user_id):
         user = get_object_or_404(User,pk=user_id)
-        serializer = ClipSerializer(self.paginate_queryset(queryset=user.arts.all().order_by('created_date')),many=True)
+        serializer = ClipSerializer(self.paginate_queryset(queryset=user.clips.all().order_by('created_date')),many=True)
         return Response(self.get_paginated_response(serializer.data).data,status=status.HTTP_200_OK)
 
     @action(methods=['get'], detail=False, permission_classes=[],
             url_path="trending", url_name='get_trending_clips')
     def get_trending_clips(self,request):
 
-        most_liked_arts = Clip.objects.annotate(likes_count=Count('likes')).order_by('-likes_count')
+        most_liked_clips = Clip.objects.annotate(likes_count=Count('likes')).order_by('-likes_count')
 
-        return Response(TrendingClipSerializer(most_liked_arts,many=True).data,status=status.HTTP_200_OK)
+        return Response(TrendingClipSerializer(most_liked_clips,many=True).data,status=status.HTTP_200_OK)
 
     @action(methods=['get'], detail=False, permission_classes=[],
             url_path="follows", url_name='get_followers_clips')
@@ -74,8 +74,8 @@ class ClipViewSet(viewsets.ModelViewSet):
         return Response(SimpleClipSerializer(flat_list,many=True).data,status=status.HTTP_200_OK)
 
     @action(methods=['post','delete'], detail=False, permission_classes=[permissions.IsAuthenticated],
-            url_path="(?P<clip_id>[^/.]+)/tags", url_name='add_art_clips')
-    def add_art_clips(self,request,clip_id):
+            url_path="(?P<clip_id>[^/.]+)/tags", url_name='add_clip_tags')
+    def add_clip_tags(self,request,clip_id):
         clip = get_object_or_404(Clip,pk=clip_id)
 
         if request.method == 'POST':
@@ -90,14 +90,14 @@ class ClipViewSet(viewsets.ModelViewSet):
 
     @action(methods=['get'], detail=False, permission_classes=[permissions.IsAuthenticated],
             url_path="(?P<clip_id>[^/.]+)/similar-clips", url_name='get_similar_clips')
-    def get_similar_clips(self,request,art_id):
+    def get_similar_clips(self,request,clip_id):
 
-        clip = get_object_or_404(Clip,pk=art_id)
+        clip = get_object_or_404(Clip,pk=clip_id)
         similar_clips = []
 
         for tag in clip.tags.all():
-            for art in tag.clips.exclude(id=art_id)[:25]:
-                similar_clips.append(art)
+            for clip in tag.clips.exclude(id=clip_id)[:25]:
+                similar_clips.append(clip)
             
         serializer = SimpleClipSerializer(set(similar_clips),many=True)
         return Response(serializer.data, status = status.HTTP_200_OK)
@@ -109,7 +109,7 @@ class ClipViewSet(viewsets.ModelViewSet):
         tag = request.query_params.get('tag')
         if tag is not None:
             tag = get_object_or_404(Tag,name=tag)
-            serializer  = SimpleClipSerializer(self.paginate_queryset(tag.arts.all().order_by('created_date')),many=True)
+            serializer  = SimpleClipSerializer(self.paginate_queryset(tag.clips.all().order_by('created_date')),many=True)
             return Response(self.get_paginated_response(serializer.data).data, status = status.HTTP_200_OK)
         else:
             return Response(SimpleClipSerializer(Clip.objects.all(),many=True).data, status = status.HTTP_200_OK)
@@ -128,9 +128,9 @@ class LikeViewSet(viewsets.ViewSet):
         liked_clip = request.data['clip']
 
         if perform == 'like':
-            like = liked_clip(request.data,liked_clip,request.user)
+            like = like_clips(request.data,liked_clip,request.user)
             clip = get_object_or_404(Clip,pk=liked_clip)
-            Notification.objects.create(message = "Liked your Clip",art_id = liked_clip,type=NotificationType.LIKE,user_by=request.user,user_to=clip.user)
+            Notification.objects.create(message = "Liked your Clip",clip_id = liked_clip,type=NotificationType.LIKE,user_by=request.user,user_to=clip.user)
             return Response(like,status=status.HTTP_200_OK)
 
         elif perform == 'unlike':

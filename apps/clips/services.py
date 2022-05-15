@@ -2,7 +2,9 @@ from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
 from .models import Clip,Like, Tag
 from .serializers import LikeSerializer,ClipSerializer
+from django.db import transaction
 
+@transaction.atomic
 def like_clips(request_data,clip_id,user):
     try:
         serializer = LikeSerializer(data={'liked_clip':request_data.get('clip')})
@@ -13,9 +15,10 @@ def like_clips(request_data,clip_id,user):
         print(e)
         raise ValidationError("Something went wrong")
 
+@transaction.atomic
 def unlike_clip(request_data,clip_id,user):
     try:
-        like = get_object_or_404(Like,liked_art_id=clip_id,liked_user = user)
+        like = get_object_or_404(Like,liked_clip_id=clip_id,liked_user = user)
         like.delete()
     except Exception as e:
         print(e)
