@@ -7,7 +7,7 @@ on:
 env:
   IMAGE_NAME: videoapp
   APP_NAME: videoapp
-  AWS_REGION: us-east-2
+  AWS_REGION: us-east-1
   AWS_ECR_REPO: videoapp
 
 jobs:
