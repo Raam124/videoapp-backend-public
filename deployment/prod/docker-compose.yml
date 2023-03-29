@@ -1,0 +1,17 @@
+version: "3"
+
+services:
+  server:
+    hostname: videoapp-api
+    image: 091995416524.dkr.ecr.us-east-1.amazonaws.com/videoapp:latest
+    env_file: common.env
+    environment:
+      DEBUG: 'true'
+    expose:
+        - '8000'
+    ports:
+        - 8000:8000
+    command: python manage.py runserver 0.0.0.0:8000
+
+networks:
+  default:
