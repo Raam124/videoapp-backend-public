@@ -1,0 +1,55 @@
+services:
+  database:
+    image: postgres
+    hostname: database
+    environment:
+      - POSTGRES_DB=videoapp
+      - POSTGRES_USER=videoappuser
+      - POSTGRES_PASSWORD=videoapp
+    expose:
+      - '5432'
+    ports:
+      - 5432:5432
+    volumes:
+      - videoapp-database-data:/var/lib/postgresql/data
+    command: ["postgres", "-c", "log_statement=all"]
+  
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin-videoapp
+    depends_on:
+      - database
+    ports:
+      - "5555:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    volumes:
+      - pgadmin-videoapp-data:/var/lib/pgadmin
+    restart: unless-stopped
+
+  server:
+    hostname: server
+    build: 
+      context: ./
+      dockerfile: ./Dockerfile
+    environment:
+      DEBUG: 0
+      DATABASE_USER: videoappuser
+      DATABASE_PWD: videoapp
+      DATABASE_NAME: videoapp
+      DATABASE_HOST: database
+      DATABASE_PORT: 5432
+    expose:
+      - '8000'
+    ports:
+      - 8000:8000 # {8005 - host port} {change 8005 if it is already assigned to a project}
+    depends_on:
+      - database
+    volumes: 
+      - ./:/app
+    command: python manage.py runserver 0.0.0.0:8000
+  
+volumes:
+  videoapp-database-data:
+  pgadmin-videoapp-data:
