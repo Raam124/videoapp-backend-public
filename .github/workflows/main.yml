@@ -1,0 +1,43 @@
+name: Docker
+
+on:
+  push:
+    branches: [ master ]
+
+env:
+  IMAGE_NAME: videoapp
+  APP_NAME: videoapp
+  AWS_REGION: us-east-2
+  AWS_ECR_REPO: videoapp
+
+jobs:
+  push:
+    
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Build image
+        run: docker build ./ --tag $IMAGE_NAME
+        
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+          
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+        
+      - name: Tag, and push image to Amazon ECR
+#         env:
+#           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+#           ECR_REPOSITORY: ${{ env.AWS_ECR_REPO }}
+#           IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker tag  videoapp:latest 091995416524.dkr.ecr.us-east-1.amazonaws.com/videoapp:latest
+          docker push 091995416524.dkr.ecr.us-east-1.amazonaws.com/videoapp:latest
