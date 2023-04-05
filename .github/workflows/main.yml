@@ -41,3 +41,22 @@ jobs:
         run: |
           docker tag  videoapp:latest 091995416524.dkr.ecr.us-east-1.amazonaws.com/videoapp:latest
           docker push 091995416524.dkr.ecr.us-east-1.amazonaws.com/videoapp:latest
+          
+      - name: Pull ECR changes in EC2 & update deploy
+        env:
+            PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+            HOSTNAME: ${{secrets.SSH_HOST}}
+            USER_NAME: ${secrets.USER_NAME}
+        run: |
+          echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
+          ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
+          
+          cd ..//..
+          cd videoapp
+          aws ecr get-login-password --region us-east-1 | sudo docker login --username AWS --password-stdin 091995416524.dkr.ecr.us-east-1.amazonaws.com
+          docker pull 091995416524.dkr.ecr.us-east-1.amazonaws.com/videoapp:latest
+          docker compose pull server
+          docker compose stop server
+          docker compose rm -y server
+          docker compose up -d server
+          
