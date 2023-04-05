@@ -59,4 +59,5 @@ jobs:
             docker compose stop server
             docker compose rm -y server
             docker compose up -d server
+            '
           
