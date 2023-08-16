@@ -27,7 +27,7 @@ SECRET_KEY = '1a44xljkvgmw511%+$m(6i5*&r%wid28o2xm!oe1a-lb$#dtvd'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['ec2-3-231-59-171.compute-1.amazonaws.com']
+ALLOWED_HOSTS = ['52.22.99.184']
 
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_CREDENTIALS = True
