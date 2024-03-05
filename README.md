@@ -1,5 +1,3 @@
-# django-vue-boilerplate
-Template for Django  backend &amp; Vue frontend
 
 steps to up django backend (currently using sqlLite so no need for database configuration)
 user your desired virtual environment(we use pipenv)
